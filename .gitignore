@@ -1,4 +1,25 @@
+# Environment files
 .env
-backend/.env
-.env
-backend/index.html
+**/ .env
+*.env
+
+# Python Virtual Environments
+venv/
+.venv/
+ENV/
+backend/.venv/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Databases
+*.db
+*.sqlite3
+
+# IDE and OS specific
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store
