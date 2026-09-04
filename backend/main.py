@@ -5,11 +5,20 @@ from service.parser import extract_text_from_pdf
 from service.gemini_ai import analyze_resume_vs_jd
 from models_db import InterviewSession,InterviewTurn
 from service.interview_agent import start_interview_chat
+from fastapi.middleware.cors import CORSMiddleware
 # Create database tables automatically on startup (for development)
 Base.metadata.create_all(bind=engine)
 
 app=FastAPI(title="AI Interview Prep API",version="1.0")
-
+# --- ADD THIS CORS CONFIGURATION ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Allows your Vite React frontend
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods (POST, GET, etc.)
+    allow_headers=["*"],  # Allows all headers (including multipart/form-data)
+)
+# ----------------------------------
 @app.post("/api/v1/analyze-resume")
 async def analyze_resume_endpoint(
    user_id:int=Form(...),
