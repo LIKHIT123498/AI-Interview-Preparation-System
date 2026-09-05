@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { uploadResumeAndJD } from './services/api';
-import { Send, UploadCloud, ShieldAlert, Cpu } from 'lucide-react';
+import { Send, UploadCloud, ShieldAlert, Cpu, Mic, MicOff } from 'lucide-react';
 import './App.css';
 
 export default function App() {
@@ -17,6 +17,69 @@ export default function App() {
   const [inputMessage, setInputMessage] = useState('');
   const ws = useRef(null);
   const chatBottomRef = useRef(null);
+
+  // Speech-to-text state
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+  const speechBaseTextRef = useRef('');
+
+  // Initialize the browser's native speech recognition when available.
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      return undefined;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event) => {
+      let transcript = '';
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        transcript += event.results[i][0].transcript;
+      }
+
+      setInputMessage(`${speechBaseTextRef.current}${transcript}`);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition.stop();
+      recognitionRef.current = null;
+    };
+  }, []);
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      alert('Speech recognition is not supported in this browser. Try Google Chrome or Microsoft Edge.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      return;
+    }
+
+    speechBaseTextRef.current = inputMessage.trim()
+      ? `${inputMessage.trim()} `
+      : '';
+    recognitionRef.current.start();
+    setIsListening(true);
+  };
 
   // Handle Resume Upload & Start Interview Setup
   const handleStartInterview = async (e) => {
@@ -72,6 +135,11 @@ export default function App() {
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!inputMessage.trim() || !ws.current) return;
+
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
 
     const userText = inputMessage;
     setMessages((prev) => [...prev, { sender: 'You', text: userText }]);
@@ -151,9 +219,20 @@ export default function App() {
             </div>
 
             <form onSubmit={handleSendMessage} className="chat-input-form">
+              <button
+                type="button"
+                onClick={toggleListening}
+                className={`mic-btn ${isListening ? 'listening' : ''}`}
+                title={isListening ? 'Stop listening' : 'Start voice input'}
+                aria-label={isListening ? 'Stop listening' : 'Start voice input'}
+              >
+                {isListening ? <MicOff size={18} color="#f87171" /> : <Mic size={18} />}
+              </button>
               <input 
                 type="text"
-                placeholder="Explain your approach, design trade-offs, or defend your code..."
+                placeholder={isListening
+                  ? 'Listening... Speak your answer now...'
+                  : 'Type or click mic to speak your answer...'}
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 autoComplete="off"
