@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { uploadResumeAndJD } from './services/api';
-import { Send, UploadCloud, ShieldAlert, Cpu, Mic, MicOff } from 'lucide-react';
+import { Send, UploadCloud, ShieldAlert, Cpu, Mic, MicOff, Code, MessageSquare } from 'lucide-react';
+import Editor from '@monaco-editor/react';
 import './App.css';
 
 export default function App() {
@@ -10,6 +11,7 @@ export default function App() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
+  const [activeTab, setActiveTab] = useState('chat');
   
   // WebSocket State
   const [sessionId, setSessionId] = useState(null);
@@ -17,6 +19,8 @@ export default function App() {
   const [inputMessage, setInputMessage] = useState('');
   const ws = useRef(null);
   const chatBottomRef = useRef(null);
+  const [code, setCode] = useState('# Write your solution here\n\ndef solution():\n    pass\n');
+  const [language, setLanguage] = useState('python');
 
   // Speech-to-text state
   const [isListening, setIsListening] = useState(false);
@@ -205,40 +209,82 @@ export default function App() {
                 </ul>
               </div>
             )}
-          </div>
-
-          <div className="chat-panel">
-            <div className="chat-messages">
-              {messages.map((msg, index) => (
-                <div key={index} className={`message ${msg.sender === 'AI' ? 'ai-msg' : 'user-msg'}`}>
-                  <strong>{msg.sender}:</strong>
-                  <p>{msg.text}</p>
-                </div>
-              ))}
-              <div ref={chatBottomRef} />
-            </div>
-
-            <form onSubmit={handleSendMessage} className="chat-input-form">
+            <div className="workspace-tabs">
               <button
                 type="button"
-                onClick={toggleListening}
-                className={`mic-btn ${isListening ? 'listening' : ''}`}
-                title={isListening ? 'Stop listening' : 'Start voice input'}
-                aria-label={isListening ? 'Stop listening' : 'Start voice input'}
+                className={`tab-btn ${activeTab === 'chat' ? 'active' : ''}`}
+                onClick={() => setActiveTab('chat')}
               >
-                {isListening ? <MicOff size={18} color="#f87171" /> : <Mic size={18} />}
+                <MessageSquare size={16} /> Interview Chat
               </button>
-              <input 
-                type="text"
-                placeholder={isListening
-                  ? 'Listening... Speak your answer now...'
-                  : 'Type or click mic to speak your answer...'}
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                autoComplete="off"
-              />
-              <button type="submit" className="send-btn"><Send size={18} /></button>
-            </form>
+              <button
+                type="button"
+                className={`tab-btn ${activeTab === 'code' ? 'active' : ''}`}
+                onClick={() => setActiveTab('code')}
+              >
+                <Code size={16} /> Live Code Editor
+              </button>
+            </div>
+          </div>
+
+          <div className="workspace-main-panel">
+            {activeTab === 'chat' ? (
+              <div className="chat-panel">
+                <div className="chat-messages">
+                  {messages.map((msg, index) => (
+                    <div key={index} className={`message ${msg.sender === 'AI' ? 'ai-msg' : 'user-msg'}`}>
+                      <strong>{msg.sender}:</strong>
+                      <p>{msg.text}</p>
+                    </div>
+                  ))}
+                  <div ref={chatBottomRef} />
+                </div>
+
+                <form onSubmit={handleSendMessage} className="chat-input-form">
+                  <button
+                    type="button"
+                    onClick={toggleListening}
+                    className={`mic-btn ${isListening ? 'listening' : ''}`}
+                    title={isListening ? 'Stop listening' : 'Start voice input'}
+                    aria-label={isListening ? 'Stop listening' : 'Start voice input'}
+                  >
+                    {isListening ? <MicOff size={18} color="#f87171" /> : <Mic size={18} />}
+                  </button>
+                  <input
+                    type="text"
+                    placeholder={isListening
+                      ? 'Listening... Speak your answer now...'
+                      : 'Type or click mic to speak your answer...'}
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    autoComplete="off"
+                  />
+                  <button type="submit" className="send-btn"><Send size={18} /></button>
+                </form>
+              </div>
+            ) : (
+              <div className="code-editor-panel">
+                <div className="editor-toolbar">
+                  <span>Language:</span>
+                  <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+                    <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="java">Java</option>
+                    <option value="sql">SQL</option>
+                  </select>
+                </div>
+                <div className="editor-wrapper">
+                  <Editor
+                    height="100%"
+                    language={language}
+                    theme="vs-dark"
+                    value={code}
+                    onChange={(newValue) => setCode(newValue ?? '')}
+                    options={{ minimap: { enabled: false }, fontSize: 14, automaticLayout: true }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

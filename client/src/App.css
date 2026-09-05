@@ -92,11 +92,52 @@ body {
   height: 75vh;
 }
 
+.workspace-main-panel {
+  background: #1e293b;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
 .sidebar-panel {
   background: #1e293b;
   padding: 1.5rem;
   border-radius: 12px;
   overflow-y: auto;
+}
+
+.workspace-tabs {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tab-btn {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  background: #334155;
+  color: white;
+}
+
+.tab-btn.active {
+  background: #0284c7;
+  border-color: #0ea5e9;
+  color: white;
 }
 
 .score-badge {
@@ -129,6 +170,36 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.code-editor-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.editor-toolbar {
+  background: #0f172a;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #334155;
+  font-size: 0.9rem;
+}
+
+.editor-toolbar select {
+  background: #1e293b;
+  color: white;
+  border: 1px solid #475569;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+}
+
+.editor-wrapper {
+  flex: 1;
+  min-height: 0;
+  padding-top: 0.5rem;
 }
 
 .chat-messages {
