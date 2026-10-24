@@ -112,14 +112,8 @@ export default function App() {
   // Setup WebSocket connection when entering the interview step
   useEffect(() => {
     if (step === 'interview' && sessionId) {
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const defaultWsBase =
-        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-          ? 'ws://localhost:8000'
-          : `${wsProtocol}//${window.location.host}`;
-      const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL || defaultWsBase;
-
-      ws.current = new WebSocket(`${wsBaseUrl}/ws/interview/${sessionId}`);
+      const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL || "ws://localhost:8000";
+      ws.current = new WebSocket(`${WS_BASE_URL}/ws/interview/${sessionId}`);
 
       ws.current.onmessage = (event) => {
         const data = JSON.parse(event.data);
