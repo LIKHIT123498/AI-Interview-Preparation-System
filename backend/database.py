@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
@@ -21,3 +21,11 @@ def get_db():
         yield db
     finally:
         db.close()
+
+def ensure_interview_session_columns():
+    columns = {column["name"] for column in inspect(engine).get_columns("interview_sessions")}
+    if "resume_text" not in columns:
+        with engine.begin() as connection:
+            connection.execute(
+                text("ALTER TABLE interview_sessions ADD COLUMN resume_text TEXT NULL")
+            )

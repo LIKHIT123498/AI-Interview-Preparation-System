@@ -97,14 +97,13 @@ export default function App() {
     try {
       const data = await uploadResumeAndJD(userId, jobDescription, file);
       setAnalysisResult(data.analysis);
-      
-      // For demonstration, assume session ID 1 was created in DB
-      // In production, your FastAPI /analyze-resume endpoint will return a session_id
-      setSessionId(1); 
+
+      setSessionId(data.session_id);
       setStep('interview');
     } catch (err) {
       console.error(err);
-      alert("Failed to process resume. Ensure backend is running.");
+      const serverMessage = err.response?.data?.detail;
+      alert(serverMessage || "Failed to process resume. Ensure backend is running.");
     } finally {
       setLoading(false);
     }
@@ -113,7 +112,14 @@ export default function App() {
   // Setup WebSocket connection when entering the interview step
   useEffect(() => {
     if (step === 'interview' && sessionId) {
-      ws.current = new WebSocket(`ws://localhost:8000/ws/interview/${sessionId}`);
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const defaultWsBase =
+        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+          ? 'ws://localhost:8000'
+          : `${wsProtocol}//${window.location.host}`;
+      const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL || defaultWsBase;
+
+      ws.current = new WebSocket(`${wsBaseUrl}/ws/interview/${sessionId}`);
 
       ws.current.onmessage = (event) => {
         const data = JSON.parse(event.data);

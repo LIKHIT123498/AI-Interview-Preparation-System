@@ -9,6 +9,7 @@ class InterviewSession(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, index=True)
     job_description = Column(Text)
+    resume_text = Column(Text, nullable=True)
     status = Column(String(50), default="in_progress")
     started_at = Column(TIMESTAMP, server_default=func.now())
 
